@@ -15,7 +15,7 @@ typedef struct {
     int posicaoy;
 } Produto;
 
-// FunÃ§Ã£o para inserir um novo produto
+// Função para inserir um novo produto
 void inserir_produto(Produto produtos[], int *total) {
     if (*total >= MAX_PRODUTOS) {
         printf("\nLimite maximo de produtos atingido!\n");
@@ -30,8 +30,10 @@ void inserir_produto(Produto produtos[], int *total) {
 
     printf("Digite o nome do produto: ");
     //scanf(" %50[^"]", novo.nome);
-    scanf(" %50[^\"]", novo.nome);
+    
+   //scanf(" %50[^\"]", novo.nome);
 
+	scanf("%f", novo.nome);
     printf("Digite a quantidade: ");
     scanf("%f", &novo.quantidade);
 
@@ -49,7 +51,7 @@ void inserir_produto(Produto produtos[], int *total) {
     (*total)++;
 }
 
-// FunÃ§Ã£o para exibir os produtos cadastrados
+// Função para exibir os produtos cadastrados
 void exibir_produtos(Produto produtos[], int total) {
     printf("\nProdutos cadastrados:\n");
     for (int i = 0; i < total; i++) {
@@ -96,3 +98,4 @@ int main() {
 
     return 0;
 }
+
