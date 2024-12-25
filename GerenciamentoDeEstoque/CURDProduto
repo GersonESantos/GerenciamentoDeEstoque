@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_PRODUTOS 100
+#define FILENAME_CSV "saida.csv"
+#define FILENAME_TXT "saida.txt"
+
+// Estrutura do produto
+typedef struct {
+    int codigo;
+    char nome[51];
+    float quantidade;
+    char unidade[6];
+    float valor;
+    int posicaox;
+    int posicaoy;
+} Produto;
+
+// Função para salvar produtos no arquivo CSV
+void salvar_csv(Produto produtos[], int total) {
+    FILE *arquivo = fopen(FILENAME_CSV, "w");
+    if (!arquivo) {
+        perror("Erro ao abrir o arquivo CSV");
+        return;
+    }
+
+    fprintf(arquivo, "codigo,nome,quantidade,unidade,valor,posicaox,posicaoy\n");
+    for (int i = 0; i < total; i++) {
+        fprintf(arquivo, "%d,%s,%.2f,%s,%.2f,%d,%d\n", 
+                produtos[i].codigo, produtos[i].nome, produtos[i].quantidade, 
+                produtos[i].unidade, produtos[i].valor, 
+                produtos[i].posicaox, produtos[i].posicaoy);
+    }
+    fclose(arquivo);
+}
+
+// Função para salvar produtos no arquivo TXT
+void salvar_txt(Produto produtos[], int total) {
+    FILE *arquivo = fopen(FILENAME_TXT, "w");
+    if (!arquivo) {
+        perror("Erro ao abrir o arquivo TXT");
+        return;
+    }
+
+    for (int i = 0; i < total; i++) {
+        fprintf(arquivo, "Produto %d:\n", i + 1);
+        fprintf(arquivo, "  Codigo: %d\n", produtos[i].codigo);
+        fprintf(arquivo, "  Nome: %s\n", produtos[i].nome);
+        fprintf(arquivo, "  Quantidade: %.2f %s\n", produtos[i].quantidade, produtos[i].unidade);
+        fprintf(arquivo, "  Valor: %.2f\n", produtos[i].valor);
+        fprintf(arquivo, "  Posicao: Armario %d, Prateleira %d\n\n", produtos[i].posicaox, produtos[i].posicaoy);
+    }
+    fclose(arquivo);
+}
+
+// Função para carregar produtos do arquivo CSV
+int carregar_csv(Produto produtos[]) {
+    FILE *arquivo = fopen(FILENAME_CSV, "r");
+    if (!arquivo) {
+        return 0;
+    }
+
+    char linha[256];
+    int total = 0;
+
+    fgets(linha, sizeof(linha), arquivo); // Ignorar cabeçalho
+    while (fgets(linha, sizeof(linha), arquivo)) {
+        sscanf(linha, "%d,%50[^,],%f,%5[^,],%f,%d,%d",
+               &produtos[total].codigo, produtos[total].nome, 
+               &produtos[total].quantidade, produtos[total].unidade, 
+               &produtos[total].valor, 
+               &produtos[total].posicaox, &produtos[total].posicaoy);
+        total++;
+    }
+
+    fclose(arquivo);
+    return total;
+}
+
+// Função para inserir novo produto
+void inserir_produto(Produto produtos[], int *total) {
+    if (*total >= MAX_PRODUTOS) {
+        printf("\nLimite maximo de produtos atingido!\n");
+        return;
+    }
+
+    Produto novo;
+    printf("\nDigite o codigo do produto (999 para encerrar): ");
+    scanf("%d", &novo.codigo);
+    if (novo.codigo == 999) return;
+
+    printf("Digite o nome do produto: ");
+    scanf(" %f", novo.nome);
+    printf("Digite a quantidade: ");
+    scanf("%f", &novo.quantidade);
+    printf("Digite a unidade de medida: ");
+    scanf("%s", novo.unidade);
+    printf("Digite o valor unitario: ");
+    scanf("%f", &novo.valor);
+
+    // Preenchimento automatico das posicoes
+    novo.posicaox = (*total / 7) % 5; // Garantir limite de 0 a 4
+    novo.posicaoy = (*total % 7); // Garantir limite de 0 a 6
+
+    produtos[*total] = novo;
+    (*total)++;
+}
+
+int main() {
+    Produto produtos[MAX_PRODUTOS];
+    int total = carregar_csv(produtos);
+
+    printf("\nBem-vindo ao sistema de gerenciamento de produtos!\n");
+
+    while (1) {
+        printf("\nMenu:\n");
+        printf("1. Inserir novo produto\n");
+        printf("2. Salvar e sair\n");
+        printf("Escolha uma opcao: ");
+
+        int opcao;
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                inserir_produto(produtos, &total);
+                break;
+            case 2:
+                salvar_csv(produtos, total);
+                salvar_txt(produtos, total);
+                printf("\nDados salvos com sucesso. Saindo...\n");
+                return 0;
+            default:
+                printf("\nOpcao invalida!\n");
+        }
+    }
+
+    return 0;
+}
